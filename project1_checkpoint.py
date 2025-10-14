@@ -83,3 +83,88 @@ shipping_percentage = calculate_shipping_percentage(data)
 write_to_file(avg_profit_results, "results.csv")
 print("Results written to results.csv")
 print("Second Class orders with Sales > 500:", round(shipping_percentage, 2), "%")
+
+import unittest
+class TestProject1(unittest.TestCase):
+    def test_calculate_average_profit_normal(self):
+        data= [
+            {'Region': 'East', 'Category': 'Furniture', 'Profit': '100'},
+            {'Region': 'East', 'Category': 'Furniture', 'Profit': '200'},
+            {'Region': 'West', 'Category': 'Technology', 'Profit': '300'}
+        ]
+        result= calculate_average_profit(data)
+        self.assertAlmostEqual(result['East']['Furniture'], 150.0)
+        self.assertAlmostEqual(result['West']['Technology'], 300.0)
+
+    def test_calculate_average_profit_multiple_categories(self):
+        data = [
+            {'Region': 'South', 'Category': 'Furniture', 'Profit': '50'},
+            {'Region': 'South', 'Category': 'Office Supplies', 'Profit': '150'}
+        ]            
+        result = calculate_average_profit(data)
+        self.assertAlmostEqual(result['South']['Furniture'], 50.0)
+        self.assertAlmostEqual(result['South']['Office Supplies'], 150.0)
+
+    def test_calculate_agerage_profit_empty(self):
+        data=[]
+        result= calculate_average_profit(data)
+        self.assertEqual(result, {})
+
+    def test_calculate_average_profit_negative_profit(self):
+        data = [
+            {'Region': 'Central', 'Category': 'Furniture', 'Profit': '-100'},
+            {'Region': 'Central', 'Category': 'Furniture', 'Profit': '0'}
+        ]
+        result = calculate_average_profit(data)
+        self.assertAlmostEqual(result['Central']['Furniture'], -50.0)
+
+    def test_calculate_shipping_percentage_normal(self):
+        data = [
+            {'Ship Mode': 'Second Class', 'Sales': '600'},
+            {'Ship Mode': 'First Class', 'Sales': '400'},
+            {'Ship Mode': 'Second Class', 'Sales': '550'}
+        ]
+        result = calculate_shipping_percentage(data)
+        self.assertAlmostEqual(round(result, 2), 66.67, places=1)
+
+    def test_calculate_shipping_percentage_no_qualifying(self):
+        data = [
+            {'Ship Mode': 'Second Class', 'Sales': '300'},
+            {'Ship Mode': 'Standard Class', 'Sales': '700'}
+        ]
+        result = calculate_shipping_percentage(data)
+        self.assertEqual(result, 0)
+
+    def test_calculate_shipping_percentage_empty(self):
+        result = calculate_shipping_percentage([])
+        self.assertEqual(result, 0)
+
+    def test_calculate_shipping_percentage_case_insensitive(self):
+        data = [
+            {'Ship Mode': 'SECOND CLASS', 'Sales': '600'}
+        ]
+        result = calculate_shipping_percentage(data)
+        self.assertEqual(result, 100.0)
+
+    def test_write_to_file_creates_file(self):
+        test_data= {'East': {'Furniture': 50.5}}
+        write_to_file(test_data, 'test_results.csv')
+        with open('test_results.csv') as f:
+            content= f.read()
+        self.assertIn('East', content)
+        self.assertIn('Furniture', content)
+        os.remove('test_results.csv')
+
+    def test_write_to_multiple_entries(self):
+        test_data={
+            'East': {'Furniture': 100.0, 'Office Supplies': 200.0},
+            'West': {'Technology': 300.0}
+        }
+        write_to_file(test_data, 'test_results.csv')
+        with open('test_results.csv') as f:
+            lines=f.readlines()
+            self.assertGreater(len(lines), 2)
+            os.remove('test_results.csv')
+
+if __name__ == '__main__':
+    unittest.main()
