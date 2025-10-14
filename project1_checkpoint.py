@@ -23,11 +23,40 @@ def read_csv_file(filename):
 
 def calculate_average_profit(data):
     #calculation 1: average profit per category in each region
-    pass
+    results={}
+    for row in data:
+        region=row['Region']
+        category= row['Category']
+        profit= float(row['Profit'])
+
+        if region not in results:
+            results[region]={}
+            if category not in results[region]:
+                results[region][category]=[]
+                results[region][category].append(profit)
+    
+    avg_results={}
+    for region, categories in results.items():
+        avg_results[region]={}
+        for category, profits in category.items():
+            avg_results[region][category]= sum(profits)/len(profits)
+    return avg_results
+
 
 def calculate_shipping_percentage(data):
     #calculation 2: r=percentage of orders shipped with 'second class' and sales> 500
-    pass
+    total_orders= 0
+    qualifying_orders=0
+
+    for row in data:
+        total_orders += 1
+        if row['Ship Mode'].strip().lower() == 'second class' and float(row['Sales'])>500:
+            qualifying_orders+=1
+
+        if total_orders == 0:
+            return 0
+        return (qualifying_orders / total_orders) *100
+    
 
 def write_to_file(results, filename):
     #writes results to a csv file
