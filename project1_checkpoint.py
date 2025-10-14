@@ -9,9 +9,17 @@
 # 1. Average Profit per Category in each Region
 # 2. Percentage of orders shipped with "Second Class" that had Sales > 500
 
+import csv
+
 def read_csv_file(filename):
     #reads dataset and returns list of dictionaries
-    pass
+    data= []
+    with open(filename,'r') as f:
+        reader=csv.Dictreader(f)
+        for row in reader:
+            data.append(row)
+    return data
+              
 
 def calculate_average_profit(data):
     #calculation 1: average profit per category in each region
