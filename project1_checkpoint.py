@@ -10,12 +10,14 @@
 # 2. Percentage of orders shipped with "Second Class" that had Sales > 500
 
 import csv
+import kagglehub
+import os
 
 def read_csv_file(filename):
     #reads dataset and returns list of dictionaries
     data= []
-    with open(filename,'r') as f:
-        reader=csv.Dictreader(f)
+    with open(filename,'r', encoding='utf-8') as f:
+        reader=csv.DictReader(f)
         for row in reader:
             data.append(row)
     return data
@@ -31,14 +33,14 @@ def calculate_average_profit(data):
 
         if region not in results:
             results[region]={}
-            if category not in results[region]:
-                results[region][category]=[]
-                results[region][category].append(profit)
+        if category not in results[region]:
+            results[region][category]=[]
+        results[region][category].append(profit)
     
     avg_results={}
     for region, categories in results.items():
         avg_results[region]={}
-        for category, profits in category.items():
+        for category, profits in categories.items():
             avg_results[region][category]= sum(profits)/len(profits)
     return avg_results
 
@@ -53,11 +55,31 @@ def calculate_shipping_percentage(data):
         if row['Ship Mode'].strip().lower() == 'second class' and float(row['Sales'])>500:
             qualifying_orders+=1
 
-        if total_orders == 0:
-            return 0
-        return (qualifying_orders / total_orders) *100
+    if total_orders == 0:
+        return 0
+    return (qualifying_orders / total_orders) *100
     
 
 def write_to_file(results, filename):
     #writes results to a csv file
-    pass
+    with open(filename, 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(['Region', 'Category', 'Average Profit'])
+        for region, categories in results.items():
+            for category, avg_profit in categories.items():
+                writer.writerow([region, category, round(avg_profit, 2)])
+
+
+path = kagglehub.dataset_download("bravehart101/sample-supermarket-dataset")
+print("Path to dataset files:", path)
+
+print("Files in dataset folder:", os.listdir(path))
+csv_file=os.path.join(path, "SampleSuperstore.csv")
+data=read_csv_file(csv_file)
+avg_profit_results = calculate_average_profit(data)
+shipping_percentage = calculate_shipping_percentage(data)
+
+# Save and display results
+write_to_file(avg_profit_results, "results.csv")
+print("Results written to results.csv")
+print("Second Class orders with Sales > 500:", round(shipping_percentage, 2), "%")
